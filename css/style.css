@@ -13,7 +13,7 @@ body {
   background-color: #d0b8a8;
 }
 h1 {
-  font-size: 4rem;
+  font-size: 3.5rem;
 }
 h2 {
   font-size: 2.5rem;
@@ -29,6 +29,10 @@ p {
 }
 ul {
   list-style: none;
+}
+.top-subtitle {
+  text-align: left;
+  padding-left: 5rem;
 }
 .sns {
   display: flex;
