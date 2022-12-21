@@ -31,75 +31,92 @@
     />
 
     <!-- Google Font-->
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poor+Story&family=Yeon+Sung&display=swap" rel="stylesheet" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR&display=swap" rel="stylesheet" />
+    <!-- style sheet-->
     <link href="css/style.css" rel="stylesheet" />
-
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Gamja+Flower&family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Poor+Story&family=Yeon+Sung&display=swap");
     </style>
-
-    <!-- Go to www.addthis.com/dashboard to customize your tools -->
-    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-62d6b201e104b376"></script>
   </head>
   <body>
-    <!-- 여기서부터 새로작성-->
     <section class="section">
-      <h1 class="title pb-3">
-        뽀로로 캐릭터 닮은꼴
-        <h2 class="subtitle pb-3">인공지능이 가장 유사한 뽀로로 캐릭터를 찾아 줍니다.</h2>
+      <h1 class="title pb-3 mb-4">
+        뽀로로 캐릭터 닮은꼴 찾기
+        <h2 class="subtitle pb-3">나는 누구랑 닮았을까?</h2>
+        <h3 class="subtitle pb-3">구글 인공지능이 얼굴 분석을 기반으로 찾아줍니다.</h3>
       </h1>
     </section>
 
     <div class="file-upload container mt-3">
       <div class="image-upload-wrap">
-        <input class="file-upload-input uploadBtn" id="uploadBtn" type="file" accept="image/*" />
+        <input class="file-upload-input" id="uploadBtn" type="file" accept="image/*" />
         <div class="drag-text">
           <h3><i class="fa-solid fa-arrow-up-from-bracket upload__icon"></i></h3>
-          <h3>사진을 올려놓거나 눌러서 업로드 하세요.</h3>
+          <h3>사진을 올려놓거나 눌러서 업로드 하세요!</h3>
         </div>
       </div>
 
       <!-- 원본 시작-->
       <div class="mt-3 file-upload-content">
-        <div id="loading" class="animated bounce">
-          <div class="spinner-border" role="status">
-            <!-- <span class="sr-only">Loading...</span> -->
+        <div class="status-container">
+          <div id="loading" class="animated bounce">
+            <div class="spinner-border" role="status"></div>
+            <p>사진에서 얼굴을 찾는 중입니다....</p>
           </div>
-          <p>인공지능이 당신의 얼굴형을 분석중입니다.</p>
+          <div id="detected">
+            <p>얼굴을 선택하세요</p>
+          </div>
         </div>
-        <div id="detected">
-          <div>
-            <p class="detectResult">사진 분석 결과</p>
-            <div>
-              <canvas class="faceImage" id="canvas"></canvas>
+        <div>
+          <div class="img-container">
+            <img class="file-upload-image" id="upload-image" src="#" alt="your image" />
+          </div>
+          <div class="canvases">
+            <div id="loading" class="animated bounce">
+              <div class="spinner-border" role="status"></div>
+              <p>닮은꼴을 찾는중입니다...</p>
+            </div>
+            <div class="select-image">
+              <div class="list-image"></div>
+              <div class="pt-3 image-title-wrap">
+                <button type="button p-2" class="button-select" id="button-confirm">
+                  <span class="try-again-text">확인</span>
+                </button>
+                <button type="button p-2" class="button-select" id="button-retry" onclick="gaReload1();" data-toggle="modal" data-target="#adModal">
+                  <span class="try-again-text">재시도</span>
+                </button>
+              </div>
+            </div>
+            <div class="view-image" style="display: none">
+              <img src="" />
+              <div>
+                <p class="resultMsg"></p>
+                <div id="result-container">
+                  <div id="label-container" class="d-flex flex-column justify-content-around"></div>
+                  <div class="pt-3 image-title-wrap">
+                    <button type="button p-2" class="try-again-btn" onclick="gaReload1();" data-toggle="modal" data-target="#adModal">
+                      <span class="try-again-text">다른 사진으로 재시도</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <img class="file-upload-image uploadImage" id="uploadImage" onload="resize(this)" src="#" alt="your image" />
-
-        <p class="resultMsg"></p>
-        <div id="label-container" class="d-flex flex-column justify-content-around"></div>
-
-        <div class="pt-3 image-title-wrap">
-          <button type="button p-2" class="try-again-btn" onclick="gaReload1();" data-toggle="modal" data-target="#adModal">
-            <span class="try-again-text">다른 사진으로 재시도</span>
-          </button>
-        </div>
+      </div>
+      <div class="footer">
+        <h4 class="machineInfo">본 서비스는 Google의 인공지능 Teachable Machine 2.0을 활용하였습니다.</h4>
       </div>
     </div>
-    <footer>
-      <!-- Go to www.addthis.com/dashboard to customize your tools -->
-      <div class="addthis_inline_share_toolbox d-flex justify-content-center mt-5"></div>
-      <h4 class="machineInfo">본 서비스는 Google의 인공지능 Teachable Machine 2.0을 활용하였습니다.</h4>
-    </footer>
   </body>
 
   <!-- Import the BlazeFace model and script.js -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
-  <script src="src/script.js"></script>
+  <script src="src/script.js" defer></script>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZ3CW52K9G"></script>
@@ -112,4 +129,12 @@
 
     gtag("config", "G-NZ3CW52K9G");
   </script>
+  <!--   
+  Copyright (c) 2022 by Noah (https://codepen.io/Noah57/pen/ZmWWqP) Permission is hereby granted, free of charge, to any person obtaining a copy of this
+  software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use,
+  copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+  subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+  Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
 </html>

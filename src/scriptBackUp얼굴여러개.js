@@ -6,10 +6,6 @@ let $uploadImage = document.getElementById("upload-image");
 let detectModel, sWidth, sHeight;
 let model, labelContainer, maxPredictions;
 
-// import jQuery https://code.jquery.com/jquery-3.3.1.min.js
-var elementSelected = null;
-var typeSelected = false;
-
 // More API functions here:
 // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
 
@@ -43,10 +39,10 @@ const detectFaces = async () => {
   const height = $uploadImage.height;
   const prediction = await detectModel.estimateFaces($uploadImage, false); // detect face coordinates
   let resizeRatio = 0;
+  console.log(prediction);
 
   if (prediction.length === 0) {
-    alert("얼굴을 인식할 수 없습니다. \n 얼굴을 찾을 수 없거나 너무 많습니다. \n 다시 시도해주세요..");
-    gaReload1();
+    alert("no Face");
     return;
   }
 
@@ -58,22 +54,22 @@ const detectFaces = async () => {
   prediction.forEach(function (el, index) {
     // create canvas element and add to the canvases class
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
     const img = document.createElement("img");
+    const ctx = canvas.getContext("2d");
 
-    $(".list-image").append(canvas);
-    $(".list-image").append(img);
+    $(".canvases").append(canvas);
+    $(".canvases").append(img);
     canvas.classList.add("face-image");
     canvas.id = "canvas_" + index;
     img.id = "img_" + index;
     var canvas_id = canvas.id;
+    console.log(canvas_id);
     var img_id = img.id;
+    console.log(img_id);
 
     // set width and height of canvas based on face coordinates
     canvas.width = el.bottomRight[0] - el.topLeft[0] + 40;
     canvas.height = el.bottomRight[1] - el.topLeft[1] + 40;
-    img.width = canvas.width;
-    img.height = canvas.height;
 
     // roundedImage(0, 0, el.bottomRight[0] - el.topLeft[0] + 40, el.bottomRight[1] - el.topLeft[1] + 40, 20);
     // ctx.clip();
@@ -89,9 +85,11 @@ const detectFaces = async () => {
       el.bottomRight[1] - el.topLeft[1] + 40
     );
 
-    // ctx.restore();
+    ctx.restore();
+    console.log(index);
     document.getElementById(img_id).src = getBase64Image(canvas_id);
   });
+
   $("#loading").hide();
   $(".file-upload-image").hide();
   $("#detected").show();
@@ -99,105 +97,85 @@ const detectFaces = async () => {
 };
 
 // run the webcam image through the image model
-async function predict() {
-  // predict can take in an image, video or canvas html element
-  // var image = document.querySelector(".faceImage"); // 원래 코드
+// async function predict() {
+//   // predict can take in an image, video or canvas html element
+//   var image = document.querySelector(".faceImage");
+//   var resultMsg;
+//   const $resultMsg = document.querySelector(".resultMsg");
+//   const prediction = await model.predict(image, false);
+//   prediction.map((e) => {
+//     switch (e.className) {
+//       case "Poby":
+//         e["classNameKor"] = "포비";
+//         break;
+//       case "Harry":
+//         e["classNameKor"] = "해리";
+//         break;
+//       case "Eddy":
+//         e["classNameKor"] = "에디";
+//         break;
+//       case "Crong":
+//         e["classNameKor"] = "크롱";
+//         break;
+//       case "Loppy":
+//         e["classNameKor"] = "루피";
+//         break;
+//       case "Pororo":
+//         e["classNameKor"] = "뽀로로";
+//         break;
+//     }
+//   });
 
-  $(document).on("click", ".list-image > img", function () {
-    $(".list-image > img").each(function () {
-      $(this).removeClass("active");
-    });
-    $(this).addClass("active");
-    elementSelected = $(this);
-    typeSelected = false;
-  });
+//   prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
+//   resultMsg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
+//   $resultMsg.innerHTML = resultMsg;
 
-  $(document).on("click", "#button-confirm", async function () {
-    const $resultMsg = document.querySelector(".resultMsg");
-    let result_msg;
-    let barWidth;
-    $(".select-image").hide();
-    $("#detected").hide();
-    $(".canvases > #loading").show();
-    $(".view-image > img").attr("src", elementSelected.attr("src"));
-    var image = document.querySelector(".view-image > img");
-    const prediction = await model.predict(image, false);
-    prediction.map((e) => {
-      switch (e.className) {
-        case "Poby":
-          e["classNameKor"] = "포비";
-          break;
-        case "Harry":
-          e["classNameKor"] = "해리";
-          break;
-        case "Eddy":
-          e["classNameKor"] = "에디";
-          break;
-        case "Crong":
-          e["classNameKor"] = "크롱";
-          break;
-        case "Loppy":
-          e["classNameKor"] = "루피";
-          break;
-        case "Pororo":
-          e["classNameKor"] = "뽀로로";
-          break;
-      }
-    });
-
-    prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
-    result_msg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
-    $resultMsg.innerHTML = result_msg;
-
-    for (let i = 0; i < maxPredictions; i++) {
-      if (prediction[i].probability.toFixed(2) > 0.1) {
-        barWidth = Math.round(prediction[i].probability.toFixed(2) * 100) + "%";
-      } else if (prediction[i].probability.toFixed(2) >= 0.01) {
-        barWidth = "4%";
-      } else {
-        barWidth = "2%";
-      }
-      var labelTitle;
-      switch (prediction[i].className) {
-        case "Poby":
-          labelTitle = "<img class='label__img' src=Img/Poby.png /> 포비";
-          break;
-        case "Harry":
-          labelTitle = "<img class='label__img' src=Img/Harry.png /> 해리";
-          break;
-        case "Eddy":
-          labelTitle = "<img class='label__img' src=Img/Eddy.png /> 에디";
-          break;
-        case "Crong":
-          labelTitle = "<img class='label__img' src=Img/Crong.png /> 크롱";
-          break;
-        case "Loppy":
-          labelTitle = "<img class='label__img' src=Img/Loppy.png /> 루피";
-          break;
-        case "Pororo":
-          labelTitle = "<img class='label__img' src=Img/Pororo.png /> 뽀로로";
-          break;
-        default:
-          labelTitle = "알 수 없음";
-      }
-      var label = "<div class='face-label d-flex align-items-center'>" + labelTitle + "</div>";
-      var bar =
-        "<div class='bar-container position-relative container'><div class='" +
-        prediction[i].className +
-        "-box'></div><div class='d-flex justify-content-center align-items-center " +
-        prediction[i].className +
-        "-bar' style='width: " +
-        barWidth +
-        "'><span class='d-block percent-text'>" +
-        Math.round(prediction[i].probability.toFixed(2) * 100) +
-        "%</span></div></div>";
-      labelContainer.childNodes[i].innerHTML = label + bar;
-    }
-
-    $(".canvases > #loading").hide();
-    $(".view-image").fadeIn("high");
-  });
-}
+//   let barWidth;
+//   for (let i = 0; i < maxPredictions; i++) {
+//     if (prediction[i].probability.toFixed(2) > 0.1) {
+//       barWidth = Math.round(prediction[i].probability.toFixed(2) * 100) + "%";
+//     } else if (prediction[i].probability.toFixed(2) >= 0.01) {
+//       barWidth = "4%";
+//     } else {
+//       barWidth = "2%";
+//     }
+//     var labelTitle;
+//     switch (prediction[i].className) {
+//       case "Poby":
+//         labelTitle = "<img class='label__img' src=Img/Poby.jpeg /> 포비";
+//         break;
+//       case "Harry":
+//         labelTitle = "<img class='label__img' src=Img/Harry.jpeg /> 해리";
+//         break;
+//       case "Eddy":
+//         labelTitle = "<img class='label__img' src=Img/Eddy.jpeg /> 에디";
+//         break;
+//       case "Crong":
+//         labelTitle = "<img class='label__img' src=Img/Crong.jpeg /> 크롱";
+//         break;
+//       case "Loppy":
+//         labelTitle = "<img class='label__img' src=Img/Loppy.png /> 루피";
+//         break;
+//       case "Pororo":
+//         labelTitle = "<img class='label__img' src=Img/Pororo.jpeg /> 뽀로로";
+//         break;
+//       default:
+//         labelTitle = "알 수 없음";
+//     }
+//     var label = "<div class='face-label d-flex align-items-center'>" + labelTitle + "</div>";
+//     var bar =
+//       "<div class='bar-container position-relative container'><div class='" +
+//       prediction[i].className +
+//       "-box'></div><div class='d-flex justify-content-center align-items-center " +
+//       prediction[i].className +
+//       "-bar' style='width: " +
+//       barWidth +
+//       "'><span class='d-block percent-text'>" +
+//       Math.round(prediction[i].probability.toFixed(2) * 100) +
+//       "%</span></div></div>";
+//     labelContainer.childNodes[i].innerHTML = label + bar;
+//   }
+// }
 
 // function resize(img) {
 //   // 원본 이미지 사이즈 저장
@@ -236,19 +214,19 @@ function gaReload1() {
   window.location.reload();
 }
 
-// function roundedImage(x, y, width, height, radius) {
-//   ctx.beginPath();
-//   ctx.moveTo(x + radius, y);
-//   ctx.lineTo(x + width - radius, y);
-//   ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-//   ctx.lineTo(x + width, y + height - radius);
-//   ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-//   ctx.lineTo(x + radius, y + height);
-//   ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-//   ctx.lineTo(x, y + radius);
-//   ctx.quadraticCurveTo(x, y, x + radius, y);
-//   ctx.closePath();
-// }
+function roundedImage(x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
 
 init();
 $uploadBtn.addEventListener("change", () => {
@@ -265,6 +243,7 @@ $uploadBtn.addEventListener("change", () => {
     $(".file-upload-content").show();
     $("#loading").show();
     $(".canvases").hide();
+    $("#detected").hide();
     $(".file-upload-image").show();
     $(".image-title").html($uploadBtn.files[0].name);
   };
@@ -283,7 +262,3 @@ function getBase64Image(canvasId) {
   var dataURL = canvas.toDataURL("image/png");
   return dataURL;
 }
-
-//** start */
-
-//** end */

@@ -3,7 +3,8 @@ let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let $uploadBtn = document.getElementById("uploadBtn");
 let $uploadImage = document.getElementById("uploadImage");
-let detectModel;
+let detectModel, sWidth, sHeight;
+let model, labelContainer, maxPredictions;
 
 // More API functions here:
 // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
@@ -11,8 +12,6 @@ let detectModel;
 // the link to your model provided by Teachable Machine export panel
 const URL = "https://teachablemachine.withgoogle.com/models/pDeFRSsqw/";
 
-let model, labelContainer, maxPredictions;
-init();
 // Load the image model and setup the webcam
 async function init() {
   const modelURL = URL + "model.json";
@@ -29,47 +28,51 @@ async function init() {
   labelContainer = document.getElementById("label-container");
   for (let i = 0; i < maxPredictions; i++) {
     // and class labels
-    labelContainer.appendChild(document.createElement("div"));
+    var element = document.createElement("div");
+    element.classList.add("d-flex");
+    labelContainer.appendChild(element);
   }
 }
 
-// 작성중
-$uploadBtn.addEventListener("change", () => {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    $uploadImage.setAttribute("src", e.target.result);
-  };
-  reader.readAsDataURL($uploadBtn.files[0]);
-});
-
 const detectFaces = async () => {
-  const prediction = await detectModel.estimateFaces($uploadImage, false);
-  console.log(prediction);
-  // draw the video first
+  const width = $uploadImage.width;
+  const height = $uploadImage.height;
+  const prediction = await detectModel.estimateFaces($uploadImage, false); // 얼굴 좌표 생성
+  let resizeRatio = 0;
+
+  if (prediction.length === 0) {
+    alert("no Face");
+    return;
+  }
+
+  if (sWidth >= sHeight) {
+    resizeRatio = sHeight / height;
+  } else {
+    resizeRatio = sWidth / width;
+  }
+  canvas.width = prediction[0].bottomRight[0] - prediction[0].topLeft[0] + 40;
+  canvas.height = prediction[0].bottomRight[1] - prediction[0].topLeft[1] + 40;
+
+  $("#loading").hide();
+  $(".file-upload-image").hide();
+  $("#detected").show();
+  $(".faceImage").show();
+
+  roundedImage(0, 0, prediction[0].bottomRight[0] - prediction[0].topLeft[0] + 40, prediction[0].bottomRight[1] - prediction[0].topLeft[1] + 40, 20);
+  ctx.clip();
   ctx.drawImage(
     $uploadImage,
-    prediction[0].topLeft[0] - 20,
-    prediction[0].topLeft[1] - 20,
-    prediction[0].bottomRight[0] - prediction[0].topLeft[0] + 20,
-    prediction[0].bottomRight[1] - prediction[0].topLeft[1] + 20,
+    (prediction[0].topLeft[0] - 20) * resizeRatio,
+    (prediction[0].topLeft[1] - 20) * resizeRatio,
+    (prediction[0].bottomRight[0] - prediction[0].topLeft[0] + 40) * resizeRatio,
+    (prediction[0].bottomRight[1] - prediction[0].topLeft[1] + 40) * resizeRatio,
     0,
     0,
-    prediction[0].bottomRight[0] - prediction[0].topLeft[0] + 20,
-    prediction[0].bottomRight[1] - prediction[0].topLeft[1] + 20
+    prediction[0].bottomRight[0] - prediction[0].topLeft[0] + 40,
+    prediction[0].bottomRight[1] - prediction[0].topLeft[1] + 40
   );
-  console.log(prediction[0].topLeft[0]);
-  console.log(prediction[0].topLeft[1]);
-  console.log(prediction[0].bottomRight[0] - prediction[0].topLeft[0]);
-  console.log(prediction[0].bottomRight[1] - prediction[0].topLeft[1]);
+  ctx.restore();
 };
-
-$uploadImage.addEventListener("load", async () => {
-  detectModel = await blazeface.load();
-  detectFaces().then(() => {
-    predict();
-  });
-});
-//** 얼굴 검출까지 작동 */
 
 // run the webcam image through the image model
 async function predict() {
@@ -78,10 +81,31 @@ async function predict() {
   var resultMsg;
   const $resultMsg = document.querySelector(".resultMsg");
   const prediction = await model.predict(image, false);
+  prediction.map((e) => {
+    switch (e.className) {
+      case "Poby":
+        e["classNameKor"] = "포비";
+        break;
+      case "Harry":
+        e["classNameKor"] = "해리";
+        break;
+      case "Eddy":
+        e["classNameKor"] = "에디";
+        break;
+      case "Crong":
+        e["classNameKor"] = "크롱";
+        break;
+      case "Loppy":
+        e["classNameKor"] = "루피";
+        break;
+      case "Pororo":
+        e["classNameKor"] = "뽀로로";
+        break;
+    }
+  });
 
   prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
-  console.log(prediction[0].className);
-  resultMsg = "가장 유사한 뽀로로 캐릭터는 " + prediction[0].className + "입니다.";
+  resultMsg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
   $resultMsg.innerHTML = resultMsg;
 
   let barWidth;
@@ -96,27 +120,27 @@ async function predict() {
     var labelTitle;
     switch (prediction[i].className) {
       case "Poby":
-        labelTitle = "포비";
+        labelTitle = "<img class='label__img' src=Img/Poby.jpeg /> 포비";
         break;
       case "Harry":
-        labelTitle = "해리";
+        labelTitle = "<img class='label__img' src=Img/Harry.jpeg /> 해리";
         break;
       case "Eddy":
-        labelTitle = "에디";
+        labelTitle = "<img class='label__img' src=Img/Eddy.jpeg /> 에디";
         break;
       case "Crong":
-        labelTitle = "크롱";
+        labelTitle = "<img class='label__img' src=Img/Crong.jpeg /> 크롱";
         break;
       case "Loppy":
-        labelTitle = "루피";
+        labelTitle = "<img class='label__img' src=Img/Loppy.png /> 루피";
         break;
       case "Pororo":
-        labelTitle = "뽀로로";
+        labelTitle = "<img class='label__img' src=Img/Pororo.jpeg /> 뽀로로";
         break;
       default:
         labelTitle = "알 수 없음";
     }
-    var label = "<div class='animal-label d-flex align-items-center'>" + labelTitle + "</div>";
+    var label = "<div class='face-label d-flex align-items-center'>" + labelTitle + "</div>";
     var bar =
       "<div class='bar-container position-relative container'><div class='" +
       prediction[i].className +
@@ -130,3 +154,83 @@ async function predict() {
     labelContainer.childNodes[i].innerHTML = label + bar;
   }
 }
+
+function resize(img) {
+  // 원본 이미지 사이즈 저장
+  var width = img.width;
+  var height = img.height;
+
+  // 가로, 세로 최대 사이즈 설정
+  var maxWidth = 600; // 원하는대로 설정. 픽셀로 하려면 maxWidth = 100  이런 식으로 입력
+  var maxHeight = 600; // 원래 사이즈 * 0.5 = 50%
+
+  // 가로나 세로의 길이가 최대 사이즈보다 크면 실행
+  if (width > maxWidth || height > maxHeight) {
+    // 가로가 세로보다 크면 가로는 최대사이즈로, 세로는 비율 맞춰 리사이즈
+    if (width > height) {
+      resizeWidth = maxWidth;
+      resizeHeight = Math.round((height * resizeWidth) / width);
+
+      // 세로가 가로보다 크면 세로는 최대사이즈로, 가로는 비율 맞춰 리사이즈
+    } else {
+      resizeHeight = maxHeight;
+      resizeWidth = Math.round((width * resizeHeight) / height);
+    }
+
+    // 최대사이즈보다 작으면 원본 그대로
+  } else {
+    resizeWidth = width;
+    resizeHeight = height;
+  }
+
+  // 리사이즈한 크기로 이미지 크기 다시 지정
+  img.width = resizeWidth;
+  img.height = resizeHeight;
+}
+
+function gaReload1() {
+  window.location.reload();
+}
+
+function roundedImage(x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+init();
+$uploadBtn.addEventListener("change", () => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    var image = new Image();
+    image.src = e.target.result;
+    image.onload = function () {
+      sWidth = this.width;
+      sHeight = this.height;
+    };
+    $uploadImage.src = e.target.result;
+    $(".image-upload-wrap").hide();
+    $(".file-upload-content").show();
+    $("#loading").show();
+    $(".faceImage").hide();
+    $("#detected").hide();
+    $(".file-upload-image").show();
+    $(".image-title").html($uploadBtn.files[0].name);
+  };
+  reader.readAsDataURL($uploadBtn.files[0]);
+});
+$uploadImage.addEventListener("load", async () => {
+  detectModel = await blazeface.load();
+
+  detectFaces().then(() => {
+    predict();
+  });
+});
