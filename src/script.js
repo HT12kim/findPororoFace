@@ -45,7 +45,7 @@ const detectFaces = async () => {
   let resizeRatio = 0;
 
   if (prediction.length === 0) {
-    alert("얼굴을 인식할 수 없습니다. \n 얼굴을 찾을 수 없거나 너무 많습니다. \n 다시 시도해주세요..");
+    alert("얼굴을 찾을 수 없거나 너무 많습니다. \n 다시 시도해주세요..");
     gaReload1();
     return;
   }
@@ -92,7 +92,7 @@ const detectFaces = async () => {
     // ctx.restore();
     document.getElementById(img_id).src = getBase64Image(canvas_id);
   });
-  $("#loading").hide();
+  $("#loading-face").hide();
   $(".file-upload-image").hide();
   $("#detected").show();
   $(".canvases").show();
@@ -110,18 +110,24 @@ async function predict() {
     $(this).addClass("active");
     elementSelected = $(this);
     typeSelected = false;
+    console.log(elementSelected);
+    $(".view-image > img").attr("src", elementSelected.attr("src"));
   });
 
   $(document).on("click", "#button-confirm", async function () {
+    console.log("hello");
+    $(".select-image").hide();
+    $("#detected").hide();
+    $("#loading-predict").show();
+
     const $resultMsg = document.querySelector(".resultMsg");
     let result_msg;
     let barWidth;
-    $(".select-image").hide();
-    $("#detected").hide();
-    $(".canvases > #loading").show();
-    $(".view-image > img").attr("src", elementSelected.attr("src"));
+    // $(".select-image").hide();
+
     var image = document.querySelector(".view-image > img");
     const prediction = await model.predict(image, false);
+    console.log(prediction);
     prediction.map((e) => {
       switch (e.className) {
         case "Poby":
@@ -194,8 +200,9 @@ async function predict() {
       labelContainer.childNodes[i].innerHTML = label + bar;
     }
 
-    $(".canvases > #loading").hide();
-    $(".view-image").fadeIn("high");
+    $("#loading-predict").hide();
+    $(".view-image").fadeIn("slow");
+    console.log("end");
   });
 }
 
@@ -263,7 +270,7 @@ $uploadBtn.addEventListener("change", () => {
     $uploadImage.src = e.target.result;
     $(".image-upload-wrap").hide();
     $(".file-upload-content").show();
-    $("#loading").show();
+    $("#loading-face").show();
     $(".canvases").hide();
     $(".file-upload-image").show();
     $(".image-title").html($uploadBtn.files[0].name);

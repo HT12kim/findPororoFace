@@ -111,7 +111,10 @@ p {
   margin: auto;
   padding: 2%;
 }
-#loading {
+#loading-face {
+  display: none;
+}
+#loading-predict {
   display: none;
 }
 #detected {
