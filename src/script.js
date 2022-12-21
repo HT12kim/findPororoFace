@@ -45,7 +45,7 @@ const detectFaces = async () => {
   let resizeRatio = 0;
 
   if (prediction.length === 0) {
-    alert("얼굴을 찾을 수 없거나 너무 많습니다. \n 다시 시도해주세요..");
+    alert("얼굴을 찾을 수 없거나 너무 많습니다. \n 다시 시도해주세요..\n 너무 멀리떨어져서 찍은 사진은 찾을수가 없어요..");
     gaReload1();
     return;
   }
@@ -110,99 +110,101 @@ async function predict() {
     $(this).addClass("active");
     elementSelected = $(this);
     typeSelected = false;
-    console.log(elementSelected);
     $(".view-image > img").attr("src", elementSelected.attr("src"));
   });
 
   $(document).on("click", "#button-confirm", async function () {
-    console.log("hello");
-    $(".select-image").hide();
-    $("#detected").hide();
-    $("#loading-predict").show();
+    if (elementSelected !== null) {
+      $(".select-image").hide();
+      $("#detected").hide();
+      $("#loading-predict").show();
 
-    const $resultMsg = document.querySelector(".resultMsg");
-    let result_msg;
-    let barWidth;
-    // $(".select-image").hide();
+      const $resultMsg = document.querySelector(".resultMsg");
+      let result_msg;
+      let barWidth;
+      // $(".select-image").hide();
 
-    var image = document.querySelector(".view-image > img");
-    const prediction = await model.predict(image, false);
-    console.log(prediction);
-    prediction.map((e) => {
-      switch (e.className) {
-        case "Poby":
-          e["classNameKor"] = "포비";
-          break;
-        case "Harry":
-          e["classNameKor"] = "해리";
-          break;
-        case "Eddy":
-          e["classNameKor"] = "에디";
-          break;
-        case "Crong":
-          e["classNameKor"] = "크롱";
-          break;
-        case "Loppy":
-          e["classNameKor"] = "루피";
-          break;
-        case "Pororo":
-          e["classNameKor"] = "뽀로로";
-          break;
+      var image = document.querySelector(".view-image > img");
+      const prediction = await model.predict(image, false);
+
+      prediction.map((e) => {
+        switch (e.className) {
+          case "Poby":
+            e["classNameKor"] = "포비";
+            break;
+          case "Harry":
+            e["classNameKor"] = "해리";
+            break;
+          case "Eddy":
+            e["classNameKor"] = "에디";
+            break;
+          case "Crong":
+            e["classNameKor"] = "크롱";
+            break;
+          case "Loppy":
+            e["classNameKor"] = "루피";
+            break;
+          case "Pororo":
+            e["classNameKor"] = "뽀로로";
+            break;
+        }
+      });
+
+      prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
+      result_msg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
+      $resultMsg.innerHTML = result_msg;
+
+      for (let i = 0; i < maxPredictions; i++) {
+        if (prediction[i].probability.toFixed(2) > 0.1) {
+          barWidth = Math.round(prediction[i].probability.toFixed(2) * 100) + "%";
+        } else if (prediction[i].probability.toFixed(2) >= 0.01) {
+          barWidth = "4%";
+        } else {
+          barWidth = "2%";
+        }
+        var labelTitle;
+        switch (prediction[i].className) {
+          case "Poby":
+            labelTitle = "<img class='label__img' src=Img/Poby.png /> 포비";
+            break;
+          case "Harry":
+            labelTitle = "<img class='label__img' src=Img/Harry.png /> 해리";
+            break;
+          case "Eddy":
+            labelTitle = "<img class='label__img' src=Img/Eddy.png /> 에디";
+            break;
+          case "Crong":
+            labelTitle = "<img class='label__img' src=Img/Crong.png /> 크롱";
+            break;
+          case "Loppy":
+            labelTitle = "<img class='label__img' src=Img/Loppy.png /> 루피";
+            break;
+          case "Pororo":
+            labelTitle = "<img class='label__img' src=Img/Pororo.png /> 뽀로로";
+            break;
+          default:
+            labelTitle = "알 수 없음";
+        }
+        var label = "<div class='face-label d-flex align-items-center'>" + labelTitle + "</div>";
+        var bar =
+          "<div class='bar-container position-relative container'><div class='" +
+          prediction[i].className +
+          "-box'></div><div class='d-flex justify-content-center align-items-center " +
+          prediction[i].className +
+          "-bar' style='width: " +
+          barWidth +
+          "'><span class='d-block percent-text'>" +
+          Math.round(prediction[i].probability.toFixed(2) * 100) +
+          "%</span></div></div>";
+        labelContainer.childNodes[i].innerHTML = label + bar;
       }
-    });
 
-    prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
-    result_msg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
-    $resultMsg.innerHTML = result_msg;
-
-    for (let i = 0; i < maxPredictions; i++) {
-      if (prediction[i].probability.toFixed(2) > 0.1) {
-        barWidth = Math.round(prediction[i].probability.toFixed(2) * 100) + "%";
-      } else if (prediction[i].probability.toFixed(2) >= 0.01) {
-        barWidth = "4%";
-      } else {
-        barWidth = "2%";
-      }
-      var labelTitle;
-      switch (prediction[i].className) {
-        case "Poby":
-          labelTitle = "<img class='label__img' src=Img/Poby.png /> 포비";
-          break;
-        case "Harry":
-          labelTitle = "<img class='label__img' src=Img/Harry.png /> 해리";
-          break;
-        case "Eddy":
-          labelTitle = "<img class='label__img' src=Img/Eddy.png /> 에디";
-          break;
-        case "Crong":
-          labelTitle = "<img class='label__img' src=Img/Crong.png /> 크롱";
-          break;
-        case "Loppy":
-          labelTitle = "<img class='label__img' src=Img/Loppy.png /> 루피";
-          break;
-        case "Pororo":
-          labelTitle = "<img class='label__img' src=Img/Pororo.png /> 뽀로로";
-          break;
-        default:
-          labelTitle = "알 수 없음";
-      }
-      var label = "<div class='face-label d-flex align-items-center'>" + labelTitle + "</div>";
-      var bar =
-        "<div class='bar-container position-relative container'><div class='" +
-        prediction[i].className +
-        "-box'></div><div class='d-flex justify-content-center align-items-center " +
-        prediction[i].className +
-        "-bar' style='width: " +
-        barWidth +
-        "'><span class='d-block percent-text'>" +
-        Math.round(prediction[i].probability.toFixed(2) * 100) +
-        "%</span></div></div>";
-      labelContainer.childNodes[i].innerHTML = label + bar;
+      $("#loading-predict").hide();
+      $(".view-image").fadeIn("900");
+    } else {
+      alert("얼굴을 선택해 주세요!");
+      return;
     }
-
-    $("#loading-predict").hide();
-    $(".view-image").fadeIn("slow");
-    console.log("end");
   });
 }
 
@@ -291,6 +293,35 @@ function getBase64Image(canvasId) {
   return dataURL;
 }
 
-//** start */
+function fn_sendFB(sns) {
+  var thisUrl = document.URL;
+  var snsTitle = "2021 웹진 [봄]";
+  if (sns == "facebook") {
+    var url = "http://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(thisUrl);
+    window.open(url, "", "width=486, height=286");
+  } else if (sns == "twitter") {
+    var url = "http://twitter.com/share?url=" + encodeURIComponent(thisUrl) + "&text=" + encodeURIComponent(snsTitle);
+    window.open(url, "tweetPop", "width=486, height=286,scrollbars=yes");
+  } else if (sns == "band") {
+    var url = "http://www.band.us/plugin/share?body=" + encodeURIComponent(snsTitle) + "&route=" + encodeURIComponent(thisUrl);
+    window.open(url, "shareBand", "width=400, height=500, resizable=yes");
+  } else if (sns == "kakaotalk") {
+    // 사용할 앱의 JavaScript 키 설정
+    Kakao.init("68e227d1587b11c7bc6a53b04cf22db6");
 
-//** end */
+    // 카카오링크 버튼 생성
+    Kakao.Link.createDefaultButton({
+      container: "#btnKakao", // HTML에서 작성한 ID값
+      objectType: "feed",
+      content: {
+        title: "2021 웹진 [봄]", // 보여질 제목
+        description: "2021 웹진 [봄]", // 보여질 설명
+        imageUrl: thisUrl, // 콘텐츠 URL
+        link: {
+          mobileWebUrl: thisUrl,
+          webUrl: thisUrl,
+        },
+      },
+    });
+  }
+}
