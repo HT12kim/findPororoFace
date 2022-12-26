@@ -96,12 +96,16 @@ const detectFaces = async () => {
   $(".file-upload-image").hide();
   $("#detected").show();
   $(".canvases").show();
+  $(".select-image").show();
 };
 
 // run the webcam image through the image model
 async function predict() {
   // predict can take in an image, video or canvas html element
   // var image = document.querySelector(".faceImage"); // 원래 코드
+  var image = document.querySelector(".view-image > img");
+  const prediction = await model.predict(image, false);
+  console.log(prediction);
 
   $(document).on("click", ".list-image > img", function () {
     $(".list-image > img").each(function () {
@@ -117,15 +121,10 @@ async function predict() {
     if (elementSelected !== null) {
       $(".select-image").hide();
       $("#detected").hide();
-      $("#loading-predict").show();
 
       const $resultMsg = document.querySelector(".resultMsg");
       let result_msg;
       let barWidth;
-      // $(".select-image").hide();
-
-      var image = document.querySelector(".view-image > img");
-      const prediction = await model.predict(image, false);
 
       prediction.map((e) => {
         switch (e.className) {
@@ -153,7 +152,6 @@ async function predict() {
       prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
       result_msg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
       $resultMsg.innerHTML = result_msg;
-
       for (let i = 0; i < maxPredictions; i++) {
         if (prediction[i].probability.toFixed(2) > 0.1) {
           barWidth = Math.round(prediction[i].probability.toFixed(2) * 100) + "%";
@@ -199,7 +197,6 @@ async function predict() {
         labelContainer.childNodes[i].innerHTML = label + bar;
       }
 
-      $("#loading-predict").hide();
       $(".view-image").fadeIn("900");
     } else {
       alert("얼굴을 선택해 주세요!");
@@ -208,56 +205,9 @@ async function predict() {
   });
 }
 
-// function resize(img) {
-//   // 원본 이미지 사이즈 저장
-//   var width = img.width;
-//   var height = img.height;
-
-//   // 가로, 세로 최대 사이즈 설정
-//   var maxWidth = 600; // 원하는대로 설정. 픽셀로 하려면 maxWidth = 100  이런 식으로 입력
-//   var maxHeight = 600; // 원래 사이즈 * 0.5 = 50%
-
-//   // 가로나 세로의 길이가 최대 사이즈보다 크면 실행
-//   if (width > maxWidth || height > maxHeight) {
-//     // 가로가 세로보다 크면 가로는 최대사이즈로, 세로는 비율 맞춰 리사이즈
-//     if (width > height) {
-//       resizeWidth = maxWidth;
-//       resizeHeight = Math.round((height * resizeWidth) / width);
-
-//       // 세로가 가로보다 크면 세로는 최대사이즈로, 가로는 비율 맞춰 리사이즈
-//     } else {
-//       resizeHeight = maxHeight;
-//       resizeWidth = Math.round((width * resizeHeight) / height);
-//     }
-
-//     // 최대사이즈보다 작으면 원본 그대로
-//   } else {
-//     resizeWidth = width;
-//     resizeHeight = height;
-//   }
-
-//   // 리사이즈한 크기로 이미지 크기 다시 지정
-//   img.width = resizeWidth;
-//   img.height = resizeHeight;
-// }
-
 function gaReload1() {
   window.location.reload();
 }
-
-// function roundedImage(x, y, width, height, radius) {
-//   ctx.beginPath();
-//   ctx.moveTo(x + radius, y);
-//   ctx.lineTo(x + width - radius, y);
-//   ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-//   ctx.lineTo(x + width, y + height - radius);
-//   ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-//   ctx.lineTo(x + radius, y + height);
-//   ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-//   ctx.lineTo(x, y + radius);
-//   ctx.quadraticCurveTo(x, y, x + radius, y);
-//   ctx.closePath();
-// }
 
 init();
 $uploadBtn.addEventListener("change", () => {
@@ -295,7 +245,7 @@ function getBase64Image(canvasId) {
 
 function fn_sendFB(sns) {
   var thisUrl = document.URL;
-  var snsTitle = "2021 웹진 [봄]";
+  var snsTitle = "뽀로로 탐색기]";
   if (sns == "facebook") {
     var url = "http://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(thisUrl);
     window.open(url, "", "width=486, height=286");
@@ -314,8 +264,8 @@ function fn_sendFB(sns) {
       container: "#btnKakao", // HTML에서 작성한 ID값
       objectType: "feed",
       content: {
-        title: "2021 웹진 [봄]", // 보여질 제목
-        description: "2021 웹진 [봄]", // 보여질 설명
+        title: "뽀로로 탐색기", // 보여질 제목
+        description: "육아휴직 중 애기 잠자는 시간 이용해 만든 뽀로로 탐색기 입니다. 우리 애기 뽀로로 닮은 캐릭터를 찾아봐요", // 보여질 설명
         imageUrl: thisUrl, // 콘텐츠 URL
         link: {
           mobileWebUrl: thisUrl,
