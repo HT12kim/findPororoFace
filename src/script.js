@@ -259,7 +259,7 @@ function fn_sendFB(sns) {
       content: {
         title: "뽀로로 탐색기", // 보여질 제목
         description: "육아휴직 중 애기 잠자는 시간 이용해 만든 뽀로로 탐색기 입니다. 우리 애기 뽀로로 닮은 캐릭터를 찾아봐요", // 보여질 설명
-        imageUrl: thisUrl, // 콘텐츠 URL
+        imageUrl: "https://pororofinder.netlify.app/Img/thumbnail.png", // 콘텐츠 URL
         link: {
           mobileWebUrl: thisUrl,
           webUrl: thisUrl,
