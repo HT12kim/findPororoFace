@@ -119,29 +119,23 @@ async function predict() {
       $(".select-image").hide();
       $("#detected").hide();
       $("#loading-predict").show();
+      // const loadingPredict = document.querySelector("#loading-predict");
+      // loadingPredict.style.display = "block";
       var image = document.querySelector(".view-image > img");
       const prediction = await model.predict(image, false);
-      prediction.map((e) => {
-        switch (e.className) {
-          case "Poby":
-            e["classNameKor"] = "포비";
-            break;
-          case "Harry":
-            e["classNameKor"] = "해리";
-            break;
-          case "Eddy":
-            e["classNameKor"] = "에디";
-            break;
-          case "Crong":
-            e["classNameKor"] = "크롱";
-            break;
-          case "Loppy":
-            e["classNameKor"] = "루피";
-            break;
-          case "Pororo":
-            e["classNameKor"] = "뽀로로";
-            break;
-        }
+
+      // create a mapping of class names to class name translations
+      const classNameMapping = {
+        Poby: "포비",
+        Harry: "해리",
+        Eddy: "에디",
+        Crong: "크롱",
+        Loppy: "루피",
+        Pororo: "뽀로로",
+      };
+      // add the classNameKor property to each prediction object
+      prediction.forEach((pred) => {
+        pred.classNameKor = classNameMapping[pred.className] || "알 수 없음";
       });
       prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
       const $resultMsg = document.querySelector(".resultMsg");
