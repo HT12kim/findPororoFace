@@ -1,5 +1,12 @@
 :root {
   --color-alge: #7999a9;
+  --color-bodyBg: #d0b8a8;
+  --color-uploadBg: #f8ede3;
+  --color-uploadWrapBg: #dfd3c3;
+  --color-dragText: #49525a;
+  --color-percentText: #6f6161;
+  --color-imageTitleWrap: #222;
+  --color-buttonBg: #35465d;
 }
 html {
   font-size: 62.5%;
@@ -7,10 +14,8 @@ html {
 body {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 100vw;
   font-family: "Poor Story", cursive;
-  background-color: #d0b8a8;
+  background-color: var(--color-bodyBg);
 }
 h1 {
   font-size: 3.5rem;
@@ -57,8 +62,7 @@ ul {
   margin: 0 auto;
   border-top-left-radius: 40px;
   border-top-right-radius: 40px;
-  background-color: #f8ede3;
-  height: 100%;
+  background-color: var(--color-uploadBg);
 }
 
 .section {
@@ -80,12 +84,12 @@ ul {
 }
 
 .image-upload-wrap:hover {
-  background-color: #dfd3c3;
+  background-color: var(--color-uploadWrapBg);
   transition: all 150ms linear;
   opacity: 0.85;
 }
 .image-upload-wrap:active {
-  background-color: #dfd3c3;
+  background-color: var(--color-uploadWrapBg);
   transition: all 150ms linear;
   opacity: 0.75;
 }
@@ -113,7 +117,7 @@ ul {
 
 .drag-text h3 {
   font-weight: 700;
-  color: #49525a;
+  color: var(--color-dragText);
 }
 
 #label-container {
@@ -156,7 +160,7 @@ ul {
 
 .percent-text {
   font-size: 2rem;
-  color: #6f6161;
+  color: var(--color-percentText);
 }
 
 .bar-container {
@@ -286,13 +290,13 @@ ul {
 
 .image-title-wrap {
   margin: 1rem auto;
-  color: #222;
+  color: var(--color-imageTitleWrap);
 }
 
 .button-select {
   border: solid 1.5px #35465d;
   border-radius: 40px;
-  background-color: #35465d;
+  background-color: var(--color-buttonBg);
   transition: all 150ms linear;
   width: 40%;
 }
@@ -309,7 +313,7 @@ ul {
 .try-again-btn {
   border: solid 1.5px #35465d;
   border-radius: 40px;
-  background-color: #35465d;
+  background-color: var(--color-buttonBg);
   width: 80%;
 }
 .try-again-text {
@@ -368,7 +372,7 @@ ul {
 }
 .youtube-icon {
   font-size: 2rem;
-  color: red;
+  color: #c4302b;
 }
 .ad-banner {
   width: 320px;
