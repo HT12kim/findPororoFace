@@ -370,3 +370,7 @@ ul {
   font-size: 2rem;
   color: red;
 }
+.ad-banner {
+  width: 320px;
+  margin: 0 auto;
+}
