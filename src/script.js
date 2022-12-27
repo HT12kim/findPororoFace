@@ -103,9 +103,6 @@ const detectFaces = async () => {
 async function predict() {
   // predict can take in an image, video or canvas html element
   // var image = document.querySelector(".faceImage"); // 원래 코드
-  var image = document.querySelector(".view-image > img");
-  const prediction = await model.predict(image, false);
-  console.log(prediction);
 
   $(document).on("click", ".list-image > img", function () {
     $(".list-image > img").each(function () {
@@ -121,11 +118,9 @@ async function predict() {
     if (elementSelected !== null) {
       $(".select-image").hide();
       $("#detected").hide();
-
-      const $resultMsg = document.querySelector(".resultMsg");
-      let result_msg;
-      let barWidth;
-
+      $("#loading-predict").show();
+      var image = document.querySelector(".view-image > img");
+      const prediction = await model.predict(image, false);
       prediction.map((e) => {
         switch (e.className) {
           case "Poby":
@@ -148,8 +143,12 @@ async function predict() {
             break;
         }
       });
-
       prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
+      const $resultMsg = document.querySelector(".resultMsg");
+
+      let result_msg;
+      let barWidth;
+
       result_msg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
       $resultMsg.innerHTML = result_msg;
       for (let i = 0; i < maxPredictions; i++) {
@@ -196,8 +195,8 @@ async function predict() {
           "%</span></div></div>";
         labelContainer.childNodes[i].innerHTML = label + bar;
       }
-
       $(".view-image").fadeIn("900");
+      $("#loading-predict").hide();
     } else {
       alert("얼굴을 선택해 주세요!");
       return;
