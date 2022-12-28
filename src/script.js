@@ -111,7 +111,7 @@ async function predict() {
     $(this).addClass("active");
     elementSelected = $(this);
     typeSelected = false;
-    $(".view-image > img").attr("src", elementSelected.attr("src"));
+    $(".view-image-comp > img").attr("src", elementSelected.attr("src"));
   });
 
   $(document).on("click", "#button-confirm", async function () {
@@ -119,9 +119,8 @@ async function predict() {
       $(".select-image").hide();
       $("#detected").hide();
       $("#loading-predict").show();
-      // const loadingPredict = document.querySelector("#loading-predict");
-      // loadingPredict.style.display = "block";
-      var image = document.querySelector(".view-image > img");
+
+      var image = document.querySelector(".view-image-comp > .resultImg");
       const prediction = await model.predict(image, false);
 
       // create a mapping of class names to class name translations
@@ -144,6 +143,8 @@ async function predict() {
       let barWidth;
 
       result_msg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
+      $(".view-image-comp > #resultImg").attr("src", "Img/" + prediction[0].className + ".png");
+
       $resultMsg.innerHTML = result_msg;
       for (let i = 0; i < maxPredictions; i++) {
         if (prediction[i].probability.toFixed(2) > 0.1) {
@@ -258,7 +259,7 @@ function fn_sendFB(sns) {
       objectType: "feed",
       content: {
         title: "뽀로로 탐색기", // 보여질 제목
-        description: "육아휴직 중 애기 잠자는 시간 이용해 만든 뽀로로 탐색기 입니다. 우리 애기 뽀로로 닮은 캐릭터를 찾아봐요", // 보여질 설명
+        description: "육아휴직 중 애기 잠자는 시간 이용해 만든 뽀로로 탐색기 입니다. 우리 아이들의 뽀로로 닮은 캐릭터를 찾아봐요", // 보여질 설명
         imageUrl: "https://pororofinder.netlify.app/Img/thumbnail.png", // 콘텐츠 URL
         link: {
           mobileWebUrl: thisUrl,

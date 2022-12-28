@@ -347,10 +347,13 @@ ul {
   border-radius: 10px;
   box-shadow: 10px 10px 10px 0px rgba(0, 0, 0, 0.2);
 }
-
-.view-image > img {
-  max-width: 20rem;
-  max-height: 20rem;
+.view-image-comp {
+  display: flex;
+  justify-content: space-around;
+}
+.view-image-comp > img {
+  max-width: 10rem;
+  max-height: 10rem;
   border: solid 2px #2a3990;
   border-radius: 10px;
   box-shadow: 10px 10px 10px 0px rgba(0, 0, 0, 0.2);
