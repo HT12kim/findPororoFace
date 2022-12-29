@@ -1,12 +1,8 @@
-// declare acanvas variable and get its context
-// let canvas = document.getElementById("canvas");
-// let ctx = canvas.getContext("2d");
 let $uploadBtn = document.getElementById("uploadBtn");
 let $uploadImage = document.getElementById("upload-image");
 let detectModel, sWidth, sHeight;
 let model, labelContainer, maxPredictions;
 
-// import jQuery https://code.jquery.com/jquery-3.3.1.min.js
 var elementSelected = null;
 var typeSelected = false;
 
@@ -70,26 +66,23 @@ const detectFaces = async () => {
     var img_id = img.id;
 
     // set width and height of canvas based on face coordinates
-    canvas.width = el.bottomRight[0] - el.topLeft[0] + 40;
-    canvas.height = el.bottomRight[1] - el.topLeft[1] + 40;
+    canvas.width = el.bottomRight[0] - el.topLeft[0] + 20;
+    canvas.height = el.bottomRight[1] - el.topLeft[1] + 20;
     img.width = canvas.width;
     img.height = canvas.height;
 
-    // roundedImage(0, 0, el.bottomRight[0] - el.topLeft[0] + 40, el.bottomRight[1] - el.topLeft[1] + 40, 20);
-    // ctx.clip();
     ctx.drawImage(
       $uploadImage,
-      (el.topLeft[0] - 20) * resizeRatio,
-      (el.topLeft[1] - 20) * resizeRatio,
-      (el.bottomRight[0] - el.topLeft[0] + 40) * resizeRatio,
-      (el.bottomRight[1] - el.topLeft[1] + 40) * resizeRatio,
+      (el.topLeft[0] - 10) * resizeRatio,
+      (el.topLeft[1] - 10) * resizeRatio,
+      (el.bottomRight[0] - el.topLeft[0] + 20) * resizeRatio,
+      (el.bottomRight[1] - el.topLeft[1] + 20) * resizeRatio,
       0,
       0,
-      el.bottomRight[0] - el.topLeft[0] + 40,
-      el.bottomRight[1] - el.topLeft[1] + 40
+      el.bottomRight[0] - el.topLeft[0] + 20,
+      el.bottomRight[1] - el.topLeft[1] + 20
     );
 
-    // ctx.restore();
     document.getElementById(img_id).src = getBase64Image(canvas_id);
   });
   $("#loading-face").hide();
@@ -100,9 +93,8 @@ const detectFaces = async () => {
 };
 
 // run the webcam image through the image model
-async function predict() {
+function predict() {
   // predict can take in an image, video or canvas html element
-  // var image = document.querySelector(".faceImage"); // 원래 코드
 
   $(document).on("click", ".list-image > img", function () {
     $(".list-image > img").each(function () {
@@ -111,87 +103,88 @@ async function predict() {
     $(this).addClass("active");
     elementSelected = $(this);
     typeSelected = false;
-    $(".view-image-comp > img").attr("src", elementSelected.attr("src"));
+    $(".view-image-comp > #userPic").attr("src", elementSelected.attr("src"));
   });
 
-  $(document).on("click", "#button-confirm", async function () {
+  $(document).on("click", "#button-confirm", function () {
     if (elementSelected !== null) {
       $(".select-image").hide();
       $("#detected").hide();
       $("#loading-predict").show();
+      setTimeout(async () => {
+        var image = document.querySelector(".view-image-comp > #userPic");
+        const prediction = await model.predict(image, false);
 
-      var image = document.querySelector(".view-image-comp > .resultImg");
-      const prediction = await model.predict(image, false);
+        // create a mapping of class names to class name translations
+        const classNameMapping = {
+          Poby: "포비",
+          Harry: "해리",
+          Eddy: "에디",
+          Crong: "크롱",
+          Loppy: "루피",
+          Pororo: "뽀로로",
+        };
+        // add the classNameKor property to each prediction object
+        prediction.forEach((pred) => {
+          pred.classNameKor = classNameMapping[pred.className] || "알 수 없음";
+        });
+        prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
+        const $resultMsg = document.querySelector(".resultMsg");
 
-      // create a mapping of class names to class name translations
-      const classNameMapping = {
-        Poby: "포비",
-        Harry: "해리",
-        Eddy: "에디",
-        Crong: "크롱",
-        Loppy: "루피",
-        Pororo: "뽀로로",
-      };
-      // add the classNameKor property to each prediction object
-      prediction.forEach((pred) => {
-        pred.classNameKor = classNameMapping[pred.className] || "알 수 없음";
-      });
-      prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
-      const $resultMsg = document.querySelector(".resultMsg");
+        let result_msg;
+        let barWidth;
 
-      let result_msg;
-      let barWidth;
+        result_msg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
+        $(".view-image-comp > #resultImg").attr("src", "Img/" + prediction[0].className + ".png");
 
-      result_msg = "가장 닮은 캐릭터는 [" + prediction[0].classNameKor + "] 입니다.";
-      $(".view-image-comp > #resultImg").attr("src", "Img/" + prediction[0].className + ".png");
-
-      $resultMsg.innerHTML = result_msg;
-      for (let i = 0; i < maxPredictions; i++) {
-        if (prediction[i].probability.toFixed(2) > 0.1) {
-          barWidth = Math.round(prediction[i].probability.toFixed(2) * 100) + "%";
-        } else if (prediction[i].probability.toFixed(2) >= 0.01) {
-          barWidth = "4%";
-        } else {
-          barWidth = "2%";
+        $resultMsg.innerHTML = result_msg;
+        for (let i = 0; i < maxPredictions; i++) {
+          if (prediction[i].probability.toFixed(2) > 0.1) {
+            barWidth = Math.round(prediction[i].probability.toFixed(2) * 100) + "%";
+          } else if (prediction[i].probability.toFixed(2) >= 0.01) {
+            barWidth = "4%";
+          } else {
+            barWidth = "2%";
+          }
+          var labelTitle;
+          switch (prediction[i].className) {
+            case "Poby":
+              labelTitle = "<img class='label__img' src=Img/Poby.png /> 포비";
+              break;
+            case "Harry":
+              labelTitle = "<img class='label__img' src=Img/Harry.png /> 해리";
+              break;
+            case "Eddy":
+              labelTitle = "<img class='label__img' src=Img/Eddy.png /> 에디";
+              break;
+            case "Crong":
+              labelTitle = "<img class='label__img' src=Img/Crong.png /> 크롱";
+              break;
+            case "Loppy":
+              labelTitle = "<img class='label__img' src=Img/Loppy.png /> 루피";
+              break;
+            case "Pororo":
+              labelTitle = "<img class='label__img' src=Img/Pororo.png /> 뽀로로";
+              break;
+            default:
+              labelTitle = "알 수 없음";
+          }
+          var label = "<div class='face-label d-flex align-items-center'>" + labelTitle + "</div>";
+          var bar =
+            "<div class='bar-container position-relative container'><div class='" +
+            prediction[i].className +
+            "-box'></div><div class='d-flex justify-content-center align-items-center " +
+            prediction[i].className +
+            "-bar' style='width: " +
+            barWidth +
+            "'><span class='d-block percent-text'>" +
+            Math.round(prediction[i].probability.toFixed(2) * 100) +
+            "%</span></div></div>";
+          labelContainer.childNodes[i].innerHTML = label + bar;
         }
-        var labelTitle;
-        switch (prediction[i].className) {
-          case "Poby":
-            labelTitle = "<img class='label__img' src=Img/Poby.png /> 포비";
-            break;
-          case "Harry":
-            labelTitle = "<img class='label__img' src=Img/Harry.png /> 해리";
-            break;
-          case "Eddy":
-            labelTitle = "<img class='label__img' src=Img/Eddy.png /> 에디";
-            break;
-          case "Crong":
-            labelTitle = "<img class='label__img' src=Img/Crong.png /> 크롱";
-            break;
-          case "Loppy":
-            labelTitle = "<img class='label__img' src=Img/Loppy.png /> 루피";
-            break;
-          case "Pororo":
-            labelTitle = "<img class='label__img' src=Img/Pororo.png /> 뽀로로";
-            break;
-          default:
-            labelTitle = "알 수 없음";
-        }
-        var label = "<div class='face-label d-flex align-items-center'>" + labelTitle + "</div>";
-        var bar =
-          "<div class='bar-container position-relative container'><div class='" +
-          prediction[i].className +
-          "-box'></div><div class='d-flex justify-content-center align-items-center " +
-          prediction[i].className +
-          "-bar' style='width: " +
-          barWidth +
-          "'><span class='d-block percent-text'>" +
-          Math.round(prediction[i].probability.toFixed(2) * 100) +
-          "%</span></div></div>";
-        labelContainer.childNodes[i].innerHTML = label + bar;
-      }
-      $(".view-image").fadeIn("900");
-      $("#loading-predict").hide();
+        $(".view-image").fadeIn("900");
+        $("#loading-predict").hide();
+      }, 100);
     } else {
       alert("얼굴을 선택해 주세요!");
       return;
